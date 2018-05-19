@@ -67,7 +67,6 @@ class RLControllerNode:
         rate = rospy.Rate(self.update_rate)  # update task periodically
         while not rospy.is_shutdown():
             rate.sleep()  # handle events, callbacks
-            print ("1111111111")
             # Update task, get control action (force command) and whether this episode is done
             if self.timestamp and self.pose and self.angular_velocity and self.linear_acceleration:
                 rospy.logdebug("RLControllerNode[{}]: t = {}".format(self.state, self.timestamp))
