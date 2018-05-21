@@ -18,7 +18,7 @@ class DDPG(BaseAgent):
 		# Actor (Policy) Model
 		self.task = task
 		self.state_size = 3
-		self.action_size = 1  # force only
+		self.action_size = 3  # force only
 		self.action_low = self.task.action_space.low[0:self.action_size]
 		self.action_high = self.task.action_space.high[0:self.action_size]
 		self.actor_local = Actor(self.state_size, self.action_size, self.action_low, self.action_high)
@@ -83,7 +83,7 @@ class DDPG(BaseAgent):
 			self.reset_episode_vars()
 
 		complete_action = np.zeros(self.task.action_space.shape)  # shape: (6,)
-		complete_action[2] = action
+		complete_action[0:3] = action
 
 		return complete_action
 

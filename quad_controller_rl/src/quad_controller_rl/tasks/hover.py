@@ -24,17 +24,17 @@ class Hover(BaseTask):
         #print("Takeoff(): action_space = {}".format(self.action_space))  # [debug]
 
         # Task-specific parameters
-        self.max_duration = 5.0  # secs
-        self.target_z = 10.0  # target height (z position) to reach for successful takeoff
-        #self.finish_takeoff = False
-        #self.finish_takeoff_pos = None
+        self.max_duration = 10.0  # secs
+        self.target = np.array([0, 0, 10.0])  # target height (z position) to reach for successful takeoff
+        self.finish_takeoff = False
+        self.finish_takeoff_pos = None
 
     def reset(self):
         #self.finish_takeoff = False
         #self.finish_takeoff_pos = None
         # Nothing to reset; just return initial condition
         return Pose(
-                position=Point(0.0, 0.0, np.random.normal(10, 0.1)),  # drop off from a slight random height
+                position=Point(0.0, 0.0, np.random.normal(0.5, 0.1)),  # drop off from a slight random height
                 orientation=Quaternion(0.0, 0.0, 0.0, 0.0),
             ), Twist(
                 linear=Vector3(0.0, 0.0, 0.0),
@@ -49,29 +49,36 @@ class Hover(BaseTask):
 
         # Compute reward / penalty and check if this episode is complete
         
-        done = False 
-        """
-        if not self.finish_takeoff:
+        done = False
 
-            reward = -min(abs(self.target_z - pose.position.z), 20.0)  
+        #if not self.finish_takeoff:
+            #cur_pos = np.array([pose.position.x, pose.position.y, pose.position.z])
 
-            if pose.position.z >= self.target_z:
-                reward += 10.0  # bonus reward
-                self.finish_takeoff_pos = np.array([pose.position.x, pose.position.y, pose.position.z])
-                self.finish_takeoff = True
+            #reward = -min(np.linalg.norm(self.target - cur_pos), 20.0)  
 
-        """
+            #if pose.position.z >= self.target_z:
+            #    reward += 10.0  # bonus reward
+                #self.finish_takeoff_pos = np.array([pose.position.x, pose.position.y, pose.position.z])
+            #    self.finish_takeoff = True
+
         #elif self.finish_takeoff:
 
-        #    print('start hover phase.')
+            #print('start hover phase.')
 
-        current_pos = np.array([pose.position.x, pose.position.y, pose.position.z])
-        #deviation = np.linalg.norm(current_pos - self.finish_takeoff_pos)
-        deviation = abs(pose.position.z - self.target_z)
-        if deviation < 2.0:
-            reward = 10.0
-        elif deviation > 2.0:
-                reward = -(deviation + abs(linear_acceleration.z))
+            #current_pos = np.array([pose.position.x, pose.position.y, pose.position.z])
+            #deviation = np.linalg.norm(current_pos - self.finish_takeoff_pos)
+
+        reward = 0
+        cur_pos = np.array([pose.position.x, pose.position.y, pose.position.z])
+        deviation = np.linalg.norm(cur_pos - self.target)
+
+        if pose.position.z > 3:
+            reward += 2
+
+        if deviation <= 3.0:
+            reward += 10.0
+        elif deviation > 3.0:
+            reward -= deviation
 
         if timestamp > self.max_duration:  # agent has run out of time
             reward -= 10.0  # extra penalty
